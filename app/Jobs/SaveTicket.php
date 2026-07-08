@@ -25,15 +25,15 @@ class SaveTicket implements ShouldQueue
         $ticket=new Ticket();
         $user=auth('host')->user();
         $ticket->host_id=$user->id;
-        $ticket->game=$this->request->game;
-        $ticket->players=$this->request->players;
-        $ticket->date=explode('T',$this->request->date)[0];
-        $ticket->time=$this->request->time;
+        $ticket->game=trim($this->request->game);
+        $ticket->players=trim($this->request->players);
+        $ticket->date=explode('T',trim($this->request->date))[0];
+        $ticket->time=trim($this->request->time);
         $ticket->city=$user->city;
         $ticket->state=$user->state;
         $ticket->area=$user->area;
         if ($this->request->reward!==null){
-            $ticket->reward=$this->request->reward;
+            $ticket->reward=trim($this->request->reward);
         }
         $ticket->save();
     }

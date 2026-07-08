@@ -16,7 +16,7 @@ class Host extends Authenticatable implements JWTSubject
         return asset('storage/'.$this->photo);
     }
     public $timestamps = false;
-    public $fillable=['city','area','state','address','name','phone','password'];
+    public $fillable=['city','area','state','photo','national_code','address','username','phone','password'];
     function ticket(){
         return $this->hasMany(Ticket::class,'host_id','id');
     }
