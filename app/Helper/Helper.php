@@ -59,7 +59,7 @@ class Helper{
             'national_code'=>$nid
         ]);
         $result=$res->json();
-        if (isset(['response_body']['data']['matched'])){
+        if (isset($result['response_body']['data']['matched'])){
             $matched=$result['response_body']['data']['matched'];
             if ($matched===true){
                 return true;

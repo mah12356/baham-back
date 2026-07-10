@@ -90,10 +90,10 @@ class CafeController extends Controller
         $file=$request->file('photo');
         $filename=time().'.'.$file->getClientOriginalName();
         if ($host->photo!==null){
-            unlink('/storage/cafes/'.$host->photo);
+            unlink('host/'.$host->photo);
         }
         $host->photo=$filename;
-        $file->move(public_path('/storage/cafes'),$filename);
+        $file->move(public_path('/host'),$filename);
         if ($host->save()){
             return response()->json([]);
         }else{

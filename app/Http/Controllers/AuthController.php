@@ -13,6 +13,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 
@@ -22,11 +23,8 @@ class AuthController extends Controller
         return State::with('city')->get();
     }
     function registerHost(Request $request){
-        $phone=Helper::phone($request->phone,$request->national_code);
-        if ($phone!==true){
-            return response()->json(['message'=>'این شماره موبایل و کد ملی باهم همخوانی ندارند']);
-        }
         $validator=Validator::make($request->all(),[
+            'username' => 'required|string',
             'phone'=>'required|min:11|max:11|unique:hosts',
             'national_code'=>'required|unique:hosts|min:10|max:10',
             'password'=>'required|min:8',
@@ -35,6 +33,7 @@ class AuthController extends Controller
             'state'=>'required',
             'area'=>'required'
         ],[
+            'username.required'=>'نام محل میزبانی الزامیست',
             'city.required'=>'شهری که در آن میزبان هستید الزامیست',
             'address.required'=>'ادرس کافه الزامیست',
             'address.unique'=>'آدرس قبلا ثبت شده',
@@ -51,39 +50,47 @@ class AuthController extends Controller
             'phone.unique'=>'این شماره موبایل قبلا ثبت شده'
         ]
         );
+        $phone=Helper::phone($request->phone,$request->national_code);
+        if ($phone!==true){
+            return response()->json(['message'=>'این شماره موبایل و کد ملی باهم همخوانی ندارند'],403);
+        }
         if($validator->fails()){
             return response()->json($validator->errors(),422);
         }else{
-            $city=City::where('name',$request->city)->first();
+            $state=State::where('name',$request->state)->first();
+            if ($state===null){
+                return response()->json(['message'=>'چنین استانی پیدا نشد'],403);
+            }
+            $city=City::where(['name'=>$request->city,'state_id'=>$state->id])->first();
             if ($city===null){
                 return response()->json(['message'=>'شهر پیدا نشد'],403);
             }
-            $state=State::where(['city_id',$city->id,'state'=>$request->name])->first();
-            if ($state===null){
-                return response()->json(['message'=>'منطقه ای با این نام در این شهر پیدا نشد'],403);
-            }
-            $res=Http::get('https://api.geoapify.com/v1/geocode/search?text='.$request->area.', Iran&&lang=fa&format=json&apiKey=075b4f1093c847c5b6aa416496b225fd');
             $i=0;
-            if (count($res['results'])===0){
-                $i=0;
-            }
-            else {
-                $result = $res['results'];
-                foreach ($result as $item) {
-                    if ($item['state'] === $request->state && $item['city'] === $request->city && $item['neighbourhood']===$request->area) {
-                        $i=1;
-                        break;
-                    }else{
-                        $i=0;
+            try{
+                $res=Http::get('https://api.geoapify.com/v1/geocode/search?text='.$request->area.', Iran&&lang=fa&format=json&apiKey=075b4f1093c847c5b6aa416496b225fd');
+                if (count($res['results'])===0){
+                    $i=0;
+                }
+                else {
+                    $result = $res['results'];
+                    foreach ($result as $item) {
+                        if ($item['state'] === $request->state && $item['city'] === $request->city && $item['neighbourhood']===$request->area) {
+                            $i=1;
+                            break;
+                        }else{
+                            $i=0;
+                        }
                     }
                 }
+            }catch (\Exception $e){
+                return response()->json(['message'=>'بدلیل قطعی اینترنت ثبت نام میزبان انجام نشد'],422);
             }
-            if($i==1){
+            if($i===1){
                 (new CreateHost($request))->handle();
                 $token=auth('host')->login(Session::get('host'));
                 return $this->respondWithToken($token,'host');
             }else{
-                return response()->json(['message'=>'این شهر محله ای با این اسم ندارد']);
+                return response()->json(['message'=>'این شهر محله ای با این اسم ندارد'],403);
             }
         }
     }

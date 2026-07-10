@@ -13,7 +13,7 @@ class Host extends Authenticatable implements JWTSubject
     public $appends=['picture'];
     public $hidden=['photo'];
     function getPictureAttribute(){
-        return asset('storage/'.$this->photo);
+        return asset('host/'.$this->photo);
     }
     public $timestamps = false;
     public $fillable=['city','area','state','photo','national_code','address','username','phone','password'];
