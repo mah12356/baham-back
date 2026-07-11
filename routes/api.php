@@ -27,7 +27,7 @@ Route::middleware(['auth:api'])->group(function (){
 Route::middleware(['auth:host'])->group(function (){
     Route::post('/save-ticket',[CafeController::class,'saveTicket']);
     Route::get('/host-profile',[CafeController::class,'hostProfile']);
-    Route::put('/edit-host',[CafeController::class,'editHost']);
+    Route::put('/edit-host',[AuthController::class,'editHost']);
 //    Route::patch('/edit-host-photo',[CafeController::class,'editHostPhoto']);
     Route::post('/answer',[CafeController::class,'answer']);
     Route::patch('/edit-ticket-date-time',[CafeController::class,'editTicketDateTime']);

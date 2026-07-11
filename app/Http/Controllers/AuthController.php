@@ -7,6 +7,7 @@ use App\Jobs\CreateHost;
 use App\Jobs\CreateUser;
 use App\Models\City;
 use App\Models\Host;
+use App\Models\Like;
 use App\Models\State;
 use App\Models\U_wallets;
 use App\Models\User;
@@ -203,6 +204,51 @@ class AuthController extends Controller
                 $usertype->save();
                 return response()->json(['message'=>'']);
             }
+        }
+    }
+    function editHost(Request $req){
+        $host=auth('host')->user();
+        $host->name=$req->name;
+        $host->phone=$req->phone;
+        $setLikeToZero=false;
+        $verifyLoc=Helper::verifyLoc($req->area,$req->city,$req->state);
+        if ($verifyLoc===false){
+            return response()->json(['message'=>'بدلیل قطعی اینترنت ثبت نام میزبان انجام نشد'],422);
+        }else{
+            /// اگر میزبان بخواد آدرس میزبانیش رو عوض کنه امتیاز هاش رو از دست میده
+            if ($req->address!==null && $host->address!==$req->address){
+                $host->address=$req->address;
+                $setLikeToZero=true;
+            }
+            if ($req->city && $host->city===$req->city){
+                $host->city=$req->city;
+                $setLikeToZero=true;
+            }
+            if ($req->area && $host->area===$req->area){
+                $host->area===$req->area;
+                $setLikeToZero=true;
+            }
+            if ($req->state && $host->state===$req->state){
+                $host->state=$req->state;
+                $setLikeToZero=true;
+            }
+            if ($setLikeToZero===true){
+                $host->likes=0;
+            }
+            if ($req->hasFile('file')){
+                $time=time();
+                $file=$req->file('file');
+                $filename=$time.$file->getClientOriginalName();
+                unlink('host/'.$host->photo);
+                $file->move(public_path('/host'),$filename);
+                $host->photo=$filename;
+            }
+            $likes=Like::where('host_id',$host->id)->get();
+            foreach ($likes as $like){
+                $like->delete();
+            }
+            $host->save();
+            return response()->json(['message'=>'تغییرات انجام شد']);
         }
     }
 }

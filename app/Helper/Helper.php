@@ -70,4 +70,26 @@ class Helper{
             return 'خطای اتصال';
         }
     }
+    static function verifyLoc($area,$city,$state){
+        try{
+            $res=Http::get('https://api.geoapify.com/v1/geocode/search?text='.$area.', Iran&&lang=fa&format=json&apiKey=075b4f1093c847c5b6aa416496b225fd');
+            if (count($res['results'])===0){
+                $i=0;
+            }
+            else {
+                $result = $res['results'];
+                foreach ($result as $item) {
+                    if ($item['state'] === $state && $item['city'] === $city && $item['neighbourhood']===$area) {
+                        $i=1;
+                        break;
+                    }else{
+                        $i=0;
+                    }
+                }
+            }
+            return $i;
+        }catch (\Exception $e){
+            return false;
+        }
+    }
 }

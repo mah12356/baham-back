@@ -6,6 +6,5 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 
 Route::get('/', function () {
-    $f=\App\Helper\Helper::phone('09377965228','0019890141');
-    return $f;
+    unlink('host/Screenshot from 2026-07-08 14-55-50.png');
 });

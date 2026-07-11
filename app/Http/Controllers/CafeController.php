@@ -48,58 +48,7 @@ class CafeController extends Controller
             return response()->json(['message'=>'خطای سرور'],400);
         }
     }
-    function editHost(Request $req){
-        $host=auth('host')->user();
-        $host->name=$req->name;
-        $host->phone=$req->phone;
-        $setLikeToZero=false;
-        $id=$host->id;
-        /// اگر میزبان بخواد آدرس میزبانیش رو عوض کنه امتیاز هاش رو از دست میده
-        if ($host->address!==$req->address){
-            $host->address=$req->address;
-            $setLikeToZero=true;
-        }
-        if ($host->city===$req->city){
-            $host->city=$req->city;
-            $setLikeToZero=true;
-        }
-        if ($host->area===$req->area){
-            $host->area===$req->area;
-            $setLikeToZero=true;
-        }
-        if ($host->state===$req->state){
-            $host->state=$req->state;
-            $setLikeToZero=true;
-        }
-        if ($setLikeToZero===true){
-            $host->likes=0;
-        }
-        $likes=Like::where('host_id',$id)->get();
-        foreach ($likes as $like){
-            $like->delete();
-        }
-        if ($host->save()){
-            return response()->json([]);
-        }else{
-            return response()->json(['message'=>'خطای سرور'],400);
-        }
-    }
 
-    function editHostPhoto(Request $request){
-        $host=auth('host')->user();
-        $file=$request->file('photo');
-        $filename=time().'.'.$file->getClientOriginalName();
-        if ($host->photo!==null){
-            unlink('host/'.$host->photo);
-        }
-        $host->photo=$filename;
-        $file->move(public_path('/host'),$filename);
-        if ($host->save()){
-            return response()->json([]);
-        }else{
-            return response()->json(['message'=>'خطای سرور'],400);
-        }
-    }
     function editTicketDateTime(Request $request){
         $user=auth('host')->user();
         $ticket=Ticket::where(['id'=>$request->id,'host_id'=>$user->id])->with('reservation.users')->first();
