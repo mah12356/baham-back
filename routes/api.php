@@ -25,11 +25,12 @@ Route::middleware(['auth:api'])->group(function (){
     Route::post('/update-user',[UserController::class,'updateUser']);
 });
 Route::middleware(['auth:host'])->group(function (){
+    Route::get('/my-comments',[CafeController::class,'myComments']);
     Route::post('/save-ticket',[CafeController::class,'saveTicket']);
     Route::get('/host-profile',[CafeController::class,'hostProfile']);
     Route::put('/edit-host',[AuthController::class,'editHost']);
 //    Route::patch('/edit-host-photo',[CafeController::class,'editHostPhoto']);
-    Route::post('/answer',[CafeController::class,'answer']);
+    Route::patch('/answer',[CafeController::class,'answer']);
     Route::patch('/edit-ticket-date-time',[CafeController::class,'editTicketDateTime']);
     Route::delete('/delete-ticket',[CafeController::class,'deleteTicket']);
 });

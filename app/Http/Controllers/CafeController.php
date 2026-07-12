@@ -41,12 +41,10 @@ class CafeController extends Controller
     }
     function answer(Request $req){
         $comment=Comment::find($req->id);
-        $comment->answer=$req->answer;
-        if ($comment->save()){
-            return response()->json([]);
-        }else{
-            return response()->json(['message'=>'خطای سرور'],400);
-        }
+        $comment->answer=$req->text;
+        $comment->save();
+        $comments=Comment::where('host_id',$comment->host_id)->get();
+        return response()->json($comments);
     }
 
     function editTicketDateTime(Request $request){
@@ -80,5 +78,9 @@ class CafeController extends Controller
             }
         }
         return response()->json(['host'=>$host]);
+    }
+
+    function myComments(){
+        return Comment::where('host_id',auth('host')->user()->id)->get();
     }
 }

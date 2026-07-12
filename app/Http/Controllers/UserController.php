@@ -59,7 +59,7 @@ class UserController extends Controller{
         }
     }
     function comments(Request $request){
-        return Comment::where('host_id',$request->id)->with('user')->get();
+        return Comment::where('host_id',$request->id)->get();
     }
 
     function addComment(Request $request){
@@ -69,11 +69,8 @@ class UserController extends Controller{
         $comment->user_id=$user->id;
         $comment->host_id=$host->id;
         $comment->message=$request->message;
-        if ($comment->save()){
-            return response('',200);
-        }else{
-            return response('',400);
-        }
+        $comment->save();
+        return response()->json($comment);
     }
     function updateUser(Request $request){
         Log::debug($request);
