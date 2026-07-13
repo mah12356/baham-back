@@ -8,7 +8,7 @@ use Morilog\Jalali\Jalalian;
 class Ticket extends Model{
     public $timestamps = false;
     public $appends=['jalali','jTime','reservations'];
-    public $hidden=['date'];
+    public $hidden=['date','time'];
     function getJalaliAttribute(){
         return Jalalian::fromDateTime($this->date)->format('Y-m-d');
     }

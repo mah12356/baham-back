@@ -6,6 +6,8 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CommonController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
 
 //Route::get('/user', function (Request $request) {
 //    return $request->user();
@@ -48,8 +50,20 @@ Route::middleware($middleware)->group(function (){
     Route::post('/save-amount',[CommonController::class,'saveAmount']);
     Route::get('/update-wallet',[CommonController::class,'updateWallet']);
 });
-Route::get('/get-sca',[HomeController::class,'getSCA']);
 Route::get('/cafe-profile/{id}',[CafeController::class,'cafeProfile']);
 Route::get('/about-us',[HomeController::class,'aboutUs']);
 Route::post('/change-password-step-one',[AuthController::class,'changePasswordStepOne']);
 Route::post('/change-password-step-two',[AuthController::class,'changePasswordStepTwo']);
+Route::get('/',function(Request $request){
+//    $file = $request->file('image');
+//
+//    $filename = $file->getClientOriginalName();
+//
+//    Storage::disk('s3')->putFileAs(
+//        'images',
+//        $file,
+//        $filename
+//    );
+    $url = Storage::disk('s3')->url('image/بارگیری.jpeg');
+    echo '<img src='.$url.'/>';
+});

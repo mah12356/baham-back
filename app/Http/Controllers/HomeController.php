@@ -11,21 +11,17 @@ use App\Models\State;
 use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
 class HomeController extends Controller{
-    function getSCA(){
-        return State::with('city.area')->get();
-    }
+
     function getGameData(){
-        $cafe=Host::with(['ticket'=>function($query){
-            if (isset($_GET['game'])){
-                $query->ticket->where('title','=',$_GET['game']);
-            }
-        }]);
-        if (isset($_GET['name'])){
-            Helper::getByCafeName($cafe);
-            return response()->json(['cafe'=>$cafe]);
+        if (isset($_GET['username'])){
+            $host=Host::query();
+            unset($_GET['game']);
+            $newHost=Helper::getByCafeName($host,$_GET);
+            return response()->json(['host'=>$newHost]);
         }else{
             $ticket=Helper::getByTicket();
             return response()->json(['ticket'=>$ticket]);

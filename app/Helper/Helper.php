@@ -2,28 +2,23 @@
 
 namespace App\Helper;
 
-use App\Models\Host;
 use App\Models\Ticket;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class Helper{
-    static function getByCafeName($cafeName){
-        foreach (array_diff_key($_GET,['game'=>0]) as $key=>$value) {
-            if ($key==='name'){
-                $cafeName->where('name','LIKE','%'.$value.'%');
-            }else{
-                $cafeName->where($key,'=',$value);
-            }
-            $cafeName->orderBy('like','desc')->get();
+    static function getByCafeName($host,$get){
+        foreach ($get as $key=>$value) {
+            $host->where($key,$value);
         }
+        return $host->get();
     }
     static function getByTicket(){
         $ticket=Ticket::query();
         foreach ($_GET as $key=>$value){
             $ticket->where($key,'=',$value);
         }
-        return $ticket->get();
+        return $ticket->with('host')->get();
     }
     static function getUser(){
         $token=new Token();
