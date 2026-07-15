@@ -12,10 +12,10 @@ class Host extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
     public $appends=['picture'];
-
+    protected $hidden=['password','photo'];
     function getPictureAttribute(){
         $path = "host/$this->photo";
-        return response(Storage::disk('s3')->temporaryUrl($path,now()->addMinutes(30)));
+        return Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(5));
     }
     public $timestamps = false;
     public $fillable=['city','area','state','photo','national_code','address','username','phone','password'];

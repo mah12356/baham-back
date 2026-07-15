@@ -216,8 +216,7 @@ class AuthController extends Controller
             $filename=$time.$photo->getClientOriginalName();
             Sms::checkSizeOfStorage();
             Storage::disk('s3')->delete('/host'.$filename);
-            Storage::disk('s3')->putFileAs('host', $photo,$filename
-            );
+            Storage::disk('s3')->putFileAs('host', $photo,$filename);
             $host->photo=$filename;
         }
         $host->save();
