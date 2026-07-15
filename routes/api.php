@@ -54,16 +54,20 @@ Route::get('/cafe-profile/{id}',[CafeController::class,'cafeProfile']);
 Route::get('/about-us',[HomeController::class,'aboutUs']);
 Route::post('/change-password-step-one',[AuthController::class,'changePasswordStepOne']);
 Route::post('/change-password-step-two',[AuthController::class,'changePasswordStepTwo']);
-Route::get('/',function(Request $request){
-//    $file = $request->file('image');
-//
-//    $filename = $file->getClientOriginalName();
-//
-//    Storage::disk('s3')->putFileAs(
-//        'images',
-//        $file,
-//        $filename
-//    );
-    $url = Storage::disk('s3')->url('image/بارگیری.jpeg');
-    echo '<img src='.$url.'/>';
+Route::post('/',function(Request $request){
+    $file = $request->file('image');
+
+    $filename = $file->getClientOriginalName();
+
+    Storage::disk('s3')->putFileAs(
+        'images',
+        $file,
+        $filename
+    );
+//    Screenshot from 2026-07-05 17-21-08.png
+});
+Route::get('/image/{file}',function($file){
+    $path = "host/$file";
+
+    return response(Storage::disk('s3')->get($path));
 });

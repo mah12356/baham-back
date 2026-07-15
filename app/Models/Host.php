@@ -5,15 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
 class Host extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
     public $appends=['picture'];
-    public $hidden=['photo'];
+
     function getPictureAttribute(){
-        return asset('host/'.$this->photo);
+        $path = "host/$this->photo";
+        return response(Storage::disk('s3')->temporaryUrl($path,now()->addMinutes(30)));
     }
     public $timestamps = false;
     public $fillable=['city','area','state','photo','national_code','address','username','phone','password'];

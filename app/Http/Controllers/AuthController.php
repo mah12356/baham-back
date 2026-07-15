@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helper\Helper;
+use App\Helper\Sms;
 use App\Jobs\CreateHost;
 use App\Jobs\CreateUser;
 use App\Models\City;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -66,26 +68,7 @@ class AuthController extends Controller
             if ($city===null){
                 return response()->json(['message'=>'شهر پیدا نشد'],403);
             }
-            $i=0;
-            try{
-                $res=Http::get('https://api.geoapify.com/v1/geocode/search?text='.$request->area.', Iran&&lang=fa&format=json&apiKey=075b4f1093c847c5b6aa416496b225fd');
-                if (count($res['results'])===0){
-                    $i=0;
-                }
-                else {
-                    $result = $res['results'];
-                    foreach ($result as $item) {
-                        if ($item['state'] === $request->state && $item['city'] === $request->city && $item['neighbourhood']===$request->area) {
-                            $i=1;
-                            break;
-                        }else{
-                            $i=0;
-                        }
-                    }
-                }
-            }catch (\Exception $e){
-                return response()->json(['message'=>'بدلیل قطعی اینترنت ثبت نام میزبان انجام نشد'],422);
-            }
+            $i=Helper::verifyLoc($request->area,$request->city,$request->state);
             if($i===1){
                 (new CreateHost($request))->handle();
                 $token=auth('host')->login(Session::get('host'));
@@ -208,47 +191,37 @@ class AuthController extends Controller
     }
     function editHost(Request $req){
         $host=auth('host')->user();
-        $host->name=$req->name;
-        $host->phone=$req->phone;
-        $setLikeToZero=false;
-        $verifyLoc=Helper::verifyLoc($req->area,$req->city,$req->state);
-        if ($verifyLoc===false){
-            return response()->json(['message'=>'بدلیل قطعی اینترنت ثبت نام میزبان انجام نشد'],422);
-        }else{
-            /// اگر میزبان بخواد آدرس میزبانیش رو عوض کنه امتیاز هاش رو از دست میده
-            if ($req->address!==null && $host->address!==$req->address){
+        if($req->name!==null){
+            $host->name=$req->name;
+        }
+        if ($req->city !==null && $req->state!==null){
+            $verifyLoc=Helper::verifyLoc($req->area,$req->city,$req->state);
+            if ($verifyLoc===false){
+                return response()->json(['message'=>'بدلیل قطعی اینترنت ثبت نام میزبان انجام نشد'],422);
+            }else{
                 $host->address=$req->address;
-                $setLikeToZero=true;
-            }
-            if ($req->city && $host->city===$req->city){
                 $host->city=$req->city;
-                $setLikeToZero=true;
-            }
-            if ($req->area && $host->area===$req->area){
-                $host->area===$req->area;
-                $setLikeToZero=true;
-            }
-            if ($req->state && $host->state===$req->state){
                 $host->state=$req->state;
-                $setLikeToZero=true;
-            }
-            if ($setLikeToZero===true){
+                $likes=Like::where('host_id',$host->id)->get();
+                foreach ($likes as $like){
+                    $like->delete();
+                }
+                /// اگر میزبان بخواد آدرس میزبانیش رو عوض کنه امتیاز هاش رو از دست میده
                 $host->likes=0;
             }
-            if ($req->hasFile('file')){
-                $time=time();
-                $file=$req->file('file');
-                $filename=$time.$file->getClientOriginalName();
-                unlink('host/'.$host->photo);
-                $file->move(public_path('/host'),$filename);
-                $host->photo=$filename;
-            }
-            $likes=Like::where('host_id',$host->id)->get();
-            foreach ($likes as $like){
-                $like->delete();
-            }
-            $host->save();
-            return response()->json(['message'=>'تغییرات انجام شد']);
         }
+        if ($req->hasFile('file')){
+            $time=time();
+            $photo=$this->request->file('file');
+            $filename=$time.$photo->getClientOriginalName();
+            Sms::checkSizeOfStorage();
+            Storage::disk('s3')->delete('/host'.$filename);
+            Storage::disk('s3')->putFileAs('host', $photo,$filename
+            );
+            $host->photo=$filename;
+        }
+        $host->save();
+        return response()->json(['message'=>'تغییرات انجام شد']);
+
     }
 }

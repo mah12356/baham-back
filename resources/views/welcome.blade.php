@@ -8,6 +8,6 @@
     <title>Document</title>
 </head>
 <body>
-<img src="{{ route('image', ['file' => $path]) }}" alt="Profile">
+<img src="http://127.0.0.1:8000/image/Screenshot%20from%202026-07-05%2017-21-08.png" alt="Profile">
 </body>
 </html>
