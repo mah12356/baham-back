@@ -54,6 +54,7 @@ Route::get('/cafe-profile/{id}',[CafeController::class,'cafeProfile']);
 Route::get('/about-us',[HomeController::class,'aboutUs']);
 Route::post('/change-password-step-one',[AuthController::class,'changePasswordStepOne']);
 Route::post('/change-password-step-two',[AuthController::class,'changePasswordStepTwo']);
+Route::patch('/change-password-step-three',[AuthController::class,'changePasswordStepThree']);
 Route::post('/',function(Request $request){
     $file = $request->file('image');
 

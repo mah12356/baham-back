@@ -13,6 +13,7 @@ use App\Models\State;
 use App\Models\U_wallets;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -139,33 +140,54 @@ class AuthController extends Controller
     }
 
     function changePasswordStepOne(Request $req){
-        $validator=Validator::make($req->all(),[
-            'phone'=>'required'
-        ],[
-            'phone.required'=>'شماره تماس رو یادت رفت'
+        if ($req->type === 'user') {
+            $validation = 'required|string|exists:users,national_code';
+        } else {
+            $validation = 'required|string|exists:hosts,national_code';
+        }
+
+        $validator = Validator::make($req->all(), [
+            'value' => $validation
+        ], [
+            'value.required' => 'شماره تماس رو یادت رفت',
+            'value.exists' => 'شماره موبایل پیدا نشد'
         ]);
         if($validator->fails()){
             return response()->json($validator->errors(),422);
-        }
-        $user=User::where('phone',$req->phone)->first()??Host::where('phone',$req->phone)->first();
-        if ($user===null){
-            return response()->json(['message'=>''],404);
         }else{
-            return response()->json(['user'=>$user]);
+            Cache::put('type',$req->type);
+            Cache::put('national_code',$req->value);
+            Cache::put('code',rand(1000,9999));
+            return response()->json([]);
         }
     }
 
     function changePasswordStepTwo(Request $req){
-        if ($req->type==='host'){
-            $user=Host::find($req->id);
+        if ($req->value===strval(Cache::get('code'))){
+            return response()->json([]);
         }else{
-            $user=User::find($req->id);
+            return response()->json(['message'=>'کد تایید درست نیست'],422);
         }
-        $user->password=Hash::make($req->password);
-        if ($user->save()){
-            return response()->json(['message'=>'']);
+    }
+
+    function changePasswordStepThree(Request $req){
+        $validator = Validator::make($req->all(), [
+            'password'=>'required|min:8'
+        ],[
+            'password.required'=>'پسورد رو یادت رفت',
+            'password.min'=>'پسورد باید دست کم ۸ کاراکتر داشته باشه'
+        ]);
+        if($validator->fails()){
+            return response()->json($validator->errors(),422);
         }else{
-            return response()->json(['message'=>''],422);
+            if (Cache::get('type')==='host'){
+                $user=Host::where('national_code',Cache::get('national_code'))->first();
+            }else{
+                $user=User::where('national_code',Cache::get('national_code'))->first();
+            }
+            $user->password=Hash::make($req->password);
+            $user->save();
+            return response()->json([]);
         }
     }
     function shaba(Request $req){
