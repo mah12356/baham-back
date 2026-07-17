@@ -56,19 +56,7 @@ Route::post('/change-password-step-one',[AuthController::class,'changePasswordSt
 Route::post('/change-password-step-two',[AuthController::class,'changePasswordStepTwo']);
 Route::patch('/change-password-step-three',[AuthController::class,'changePasswordStepThree']);
 Route::post('/',function(Request $request){
-    $file = $request->file('image');
-
-    $filename = $file->getClientOriginalName();
-
-    Storage::disk('s3')->putFileAs(
-        'images',
-        $file,
-        $filename
-    );
-//    Screenshot from 2026-07-05 17-21-08.png
-});
-Route::get('/image/{file}',function($file){
-    $path = "host/$file";
-
-    return response(Storage::disk('s3')->get($path));
+    $photo=$request->file('file');
+    $filename=$photo->getClientOriginalName();
+    Storage::disk('s3')->putFileAs('host', $photo,$filename);
 });
