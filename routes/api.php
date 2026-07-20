@@ -18,6 +18,7 @@ if (auth('api')->user()===null) {
     $middleware=['auth:api'];
 }
 Route::middleware(['auth:api'])->group(function (){
+    Route::get('/get-game-data', [HomeController::class, 'getGameData']);
     Route::post('/host-page',[CafeController::class,'hostPage']);
     Route::post('/reserve',[UserController::class,'reserve']);
     Route::get('/user-profile',[UserController::class,'userProfile']);
@@ -31,13 +32,11 @@ Route::middleware(['auth:host'])->group(function (){
     Route::post('/save-ticket',[CafeController::class,'saveTicket']);
     Route::get('/host-profile',[CafeController::class,'hostProfile']);
     Route::put('/edit-host',[AuthController::class,'editHost']);
-//    Route::patch('/edit-host-photo',[CafeController::class,'editHostPhoto']);
     Route::patch('/answer',[CafeController::class,'answer']);
     Route::patch('/edit-ticket-date-time',[CafeController::class,'editTicketDateTime']);
     Route::delete('/delete-ticket',[CafeController::class,'deleteTicket']);
 });
 Route::get('get-sc',[AuthController::class,'getSc']);
-Route::get('/get-game-data', [HomeController::class, 'getGameData']);
 Route::post('/games',[HomeController::class,'games']);
 Route::post('/register-host',[AuthController::class,'registerHost']);
 Route::post('/login-host',[AuthController::class,'loginHost']);

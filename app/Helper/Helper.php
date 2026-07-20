@@ -14,11 +14,16 @@ class Helper{
         return $host->get();
     }
     static function getByTicket(){
-        $ticket=Ticket::query();
-        foreach ($_GET as $key=>$value){
-            $ticket->where($key,'=',$value);
+        $query = Ticket::query()->with(['reservation', 'host']);
+        foreach ($_GET as $key => $value) {
+            $query->where($key, '=', $value);
         }
-        return $ticket->with('host')->get();
+        $tickets = $query->get();
+        $user = auth('api')->user();
+        foreach ($tickets as $item) {
+            $item->reserved = $item->reservation->contains('user_id', $user->id);
+        }
+        return $tickets;
     }
     static function getUser(){
         $token=new Token();

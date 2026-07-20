@@ -9,6 +9,5 @@ use Illuminate\Support\Facades\Storage;
 
 
 Route::get('/', function () {
-    $r=Host::first();
-    return $r;
+
 });

@@ -16,13 +16,14 @@ class UserController extends Controller{
     function reserve(Request $req){
         $user=auth('api')->user();
         $ticket=Ticket::find($req->ticket_id);
+        Log::info(intval($ticket->cost));
         $wallet=U_wallets::where('user_id',$user->id)->first();
         $tickets=Ticket::where('host_id',$ticket->host_id)->count();
         if ($ticket->players===$tickets){
             return response()->json(['message'=>'گنجایش تمام بلیت پر شده'],403);
-        }elseif ($user->shaba===null){
+        }elseif ($user->shaba===null && intval($ticket->cost)>0){
             return response()->json(['message'=>'برای رزرو بلیت باید شماره شبا داشته باشید'],403);
-        }elseif ($wallet->irt< $tickets->cost){
+        }elseif ($wallet->irt< intval($ticket->cost)){
             return response()->json(['message'=>'کیف پول شما موجودی از ارزش بلیت کمتر است'],403);
         }
         else{
@@ -40,22 +41,16 @@ class UserController extends Controller{
     }
     function likeCafe(Request $request){
         $user=auth('api')->user();
-        $like=Like::where(['host_id'=>$user->id,'user_id'=>$user->id])->first();
+        $like=Like::where(['host_id'=>$request->id,'user_id'=>$user->id])->first();
         if ($like===null){
             $like=new Like();
             $like->host_id=$request->id;
             $like->user_id=$user->id;
-            if ($like->save()){
-                return 'liked';
-            }else{
-                return response()->json(['message'=>'لایک انجام نشد مشکل از سرور'],422);
-            }
+            $like->save();
+            return 'liked';
         }else{
-            if ($like->delete()){
-                return 'deleted';
-            }else{
-                return response()->json(['message'=>'دیس لایک انجام نشد مشکل از سرور'],422);
-            }
+            $like->delete();
+            return 'deleted';
         }
     }
     function comments(Request $request){
