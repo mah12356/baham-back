@@ -3,30 +3,30 @@
 namespace App\Jobs;
 
 use App\Helper\Sms;
+use App\Models\Ticket;
+use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
 class DeleteTicket implements ShouldQueue
 {
     use Queueable;
-    public $ticket;
     /**
      * Create a new job instance.
      */
-    public function __construct($ticket){
-        $this->ticket = $ticket;
+    public function __construct(){
     }
     /**
      * Execute the job.
      */
     public function handle(): void{
-        foreach ($this->ticket as $item) {
-            foreach ($item->reservation as $value) {
-                Sms::deleteTicket($value->user->phone,$this->ticket);
-                $value->delete();
-                sleep(0.5);
-            }
-            $item->delete();
+        $yesterday = Carbon::yesterday();
+        $tickets=Ticket::where('date',[
+            $yesterday->copy()->startOfDay(),
+            $yesterday->copy()->endOfDay()
+        ])->get();
+        foreach($tickets as $ticket){
+            $ticket->delete();
         }
     }
 }

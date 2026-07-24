@@ -61,9 +61,12 @@ class CafeController extends Controller
         }
     }
     function deleteTicket(Request $request){
-        $user=auth('host')->user();
-        $ticket=Ticket::where(['id'=>$request->id,'host_id'=>$user->id])->with('reservation.users')->first();
-        (new DeleteTicket($ticket))->handle();
+        $ticket=Ticket::find($request->id)->with('reservation.users')->first();
+        foreach ($ticket->reservation as $value) {
+            Sms::deleteTicket($value->user->phone,$ticket);
+            $value->delete();
+        }
+        $ticket->delete();
     }
     function hostPage(Request $request){
         $user=auth('api')->user();
