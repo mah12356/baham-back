@@ -108,6 +108,9 @@ class AuthController extends Controller
             // ساخت کاربر به همراه کیف پول
             $data=$request->except('password');
             $data['password']=Hash::make($request->password);
+            foreach ($data as $key=>$item){
+                $data[$key]=trim($item);
+            }
             $user=User::create($data);
             $wallet=new U_wallets();
             $wallet->user_id=$user->id;
@@ -185,7 +188,7 @@ class AuthController extends Controller
             }else{
                 $user=User::where('national_code',Cache::get('national_code'))->first();
             }
-            $user->password=Hash::make($req->password);
+            $user->password=Hash::make(trim($req->password));
             $user->save();
             return response()->json([]);
         }
@@ -205,7 +208,7 @@ class AuthController extends Controller
             if ($shaba!==true){
                 return response()->json(['message'=>'این شماره شبا متعلق کدملی شما نیست'],422);
             }else{
-                $usertype->shaba=$req->shaba;
+                $usertype->shaba=trim($req->shaba);
                 $usertype->save();
                 return response()->json(['message'=>'']);
             }

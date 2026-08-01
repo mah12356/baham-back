@@ -26,7 +26,7 @@ class CafeController extends Controller
         $game=Game::where('title',$req->title);
         if ($game===null){
             $game=new Game();
-            $game->title=$req->title;
+            $game->title=trim($req->title);
             $game->save();
         }
         return response()->json(['message'=>'بلیت شما ذخیره شد']);
@@ -41,7 +41,7 @@ class CafeController extends Controller
     }
     function answer(Request $req){
         $comment=Comment::find($req->id);
-        $comment->answer=$req->text;
+        $comment->answer=trim($req->text);
         $comment->save();
         $comments=Comment::where('host_id',$comment->host_id)->get();
         return response()->json($comments);
@@ -50,15 +50,11 @@ class CafeController extends Controller
     function editTicketDateTime(Request $request){
         $user=auth('host')->user();
         $ticket=Ticket::where(['id'=>$request->id,'host_id'=>$user->id])->with('reservation.users')->first();
-        $ticket->date=$request->date;
-        $ticket->time=$request->time;
+        $ticket->date=trim($request->date);
+        $ticket->time=trim($request->time);
         (new SmsforChangingTicketDateTime($ticket))->handle();
-        if ($ticket->save()){
-            //ثبلاذwd
-            return response()->json([]);
-        }else{
-            return response()->json(['message'=>'خطای سرور'],400);
-        }
+        $ticket->save();
+        return response()->json([]);
     }
     function deleteTicket(Request $request){
         $ticket=Ticket::find($request->id)->with('reservation.users')->first();

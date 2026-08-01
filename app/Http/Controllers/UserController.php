@@ -29,7 +29,7 @@ class UserController extends Controller{
         else{
             $reservation=new Reservation();
             $reservation->user_id=$user->id;
-            $reservation->ticket_id=$req->ticket_id;
+            $reservation->ticket_id=trim($req->ticket_id);
             $reservation->save();
             return response()->json(['message'=>'']);
         }
@@ -44,7 +44,7 @@ class UserController extends Controller{
         $like=Like::where(['host_id'=>$request->id,'user_id'=>$user->id])->first();
         if ($like===null){
             $like=new Like();
-            $like->host_id=$request->id;
+            $like->host_id=trim($request->id);
             $like->user_id=$user->id;
             $like->save();
             return 'liked';
@@ -59,11 +59,11 @@ class UserController extends Controller{
 
     function addComment(Request $request){
         $user=auth('api')->user();
-        $host=Host::find($request->id);
+        $host=Host::find(trim($request->id));
         $comment=new Comment();
         $comment->user_id=$user->id;
         $comment->host_id=$host->id;
-        $comment->message=$request->message;
+        $comment->message=trim($request->message);
         $comment->save();
         return response()->json($comment);
     }
@@ -71,9 +71,9 @@ class UserController extends Controller{
         Log::debug($request);
         $user=auth('api')->user();
         if ($request->username!==null){
-            $user->username=$request->username;
+            $user->username=trim($request->username);
         }elseif ($request->phone!==null){
-            $user->phone=$request->phone;
+            $user->phone=trim($request->phone);
         }
         $user->save();
     }

@@ -40,6 +40,9 @@ class CreateHost implements ShouldQueue
             $filename
         );
         $data['photo']=$filename;
+        foreach ($data as $item=>$datum) {
+            $data[$item]=trim($datum);
+        }
         $host=Host::create($data);
         Session::put('host',$host);
         $wallet=new H_wallets();

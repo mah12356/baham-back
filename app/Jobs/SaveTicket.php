@@ -35,6 +35,9 @@ class SaveTicket implements ShouldQueue
         if ($this->request->reward!==null){
             $ticket->reward=trim($this->request->reward);
         }
+        if ($this->request->cost!==null){
+            $ticket->cost=trim($this->request->cost);
+        }
         $ticket->save();
     }
 }
