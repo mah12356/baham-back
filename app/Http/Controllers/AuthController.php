@@ -94,8 +94,8 @@ class AuthController extends Controller
             'password'=>'required|min:8'
         ],[
             'phone.required'=>'موبایل الزامیست',
-            'national_code.required'=>'نام میزبان الزامیست',
-            'national_code.unique'=>'این نام قبلا ثبت شده',
+            'national_code.required'=>'کدملی میزبان الزامیست',
+            'national_code.unique'=>'این کدملی قبلا ثبت شده',
             'phone.min'=>'شماره موبایل باید 11 رقم باشد',
             'phone.max'=>'شماره موبایل باید 11 رقم باشد',
             'phone.unique'=>'این شماره موبایل قبلا ثبت شده',
@@ -105,18 +105,23 @@ class AuthController extends Controller
         if ($validate->fails()){
             return response()->json($validate->errors(),422);
         }else{
-            // ساخت کاربر به همراه کیف پول
-            $data=$request->except('password');
-            $data['password']=Hash::make($request->password);
-            foreach ($data as $key=>$item){
-                $data[$key]=trim($item);
+            $auth=Helper::phone($request->phone,$request->national_code);
+            if ($auth!==true){
+                return response()->json(['message'=>'خطای اتصال با کدملی و شماره موبایل هموخوانی ندارند'],422);
+            }else{
+                // ساخت کاربر به همراه کیف پول
+                $data=$request->except('password');
+                $data['password']=Hash::make($request->password);
+                foreach ($data as $key=>$item){
+                    $data[$key]=trim($item);
+                }
+                $user=User::create($data);
+                $wallet=new U_wallets();
+                $wallet->user_id=$user->id;
+                $wallet->save();
+                $token=auth('api')->login($user);
+                return $this->respondWithToken($token,'api');
             }
-            $user=User::create($data);
-            $wallet=new U_wallets();
-            $wallet->user_id=$user->id;
-            $wallet->save();
-            $token=auth('api')->login($user);
-            return $this->respondWithToken($token,'api');
         }
     }
     function loginUser(Request $request){
@@ -204,8 +209,9 @@ class AuthController extends Controller
             return response()->json($validator->errors(),422);
         }else{
             $usertype=auth('api')->user()??auth('host')->user();
-            $shaba=Helper::shaba($req->shaba,$usertype);
+            $shaba=Helper::shaba($req->shaba,$usertype->national_code);
             if ($shaba!==true){
+                return response()->json($shaba,422);
                 return response()->json(['message'=>'این شماره شبا متعلق کدملی شما نیست'],422);
             }else{
                 $usertype->shaba=trim($req->shaba);
