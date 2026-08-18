@@ -37,7 +37,7 @@ Route::middleware(['auth:host'])->group(function (){
     Route::delete('/delete-ticket',[CafeController::class,'deleteTicket']);
 });
 Route::get('get-sc',[AuthController::class,'getSc']);
-Route::post('/games',[HomeController::class,'games']);
+Route::get('/games',[HomeController::class,'games']);
 Route::post('/register-host',[AuthController::class,'registerHost']);
 Route::post('/login-host',[AuthController::class,'loginHost']);
 Route::post('/register-user',[AuthController::class,'registerUser']);

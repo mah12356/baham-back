@@ -27,10 +27,7 @@ class HomeController extends Controller{
             return response()->json(['ticket'=>$ticket]);
         }
     }
-    function games(Request $request){
-        return Game::where('title','LIKE','%'.$request->title.'%')->get();
-    }
-
+    function games(){return Game::all();}
     function aboutUs(){
         $user=User::all()->count();
         $host=Host::all()->count();
