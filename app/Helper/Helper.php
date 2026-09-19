@@ -72,16 +72,20 @@ class Helper{
     }
     static function verifyLoc($area,$city,$state){
         try{
-            $res=Http::get('https://api.geoapify.com/v1/geocode/search?text='.$area.', Iran&&lang=fa&format=json&apiKey=075b4f1093c847c5b6aa416496b225fd');
+            $res=Http::get('https://api.geoapify.com/v1/geocode/search?text='.$area.','.$city.', Iran&&lang=fa&format=json&apiKey=075b4f1093c847c5b6aa416496b225fd');
             if (count($res['results'])===0){
                 $i=0;
             }
             else {
                 $result = $res['results'];
                 foreach ($result as $item) {
-                    if ($item['state'] === $state && $item['city'] === $city && $item['neighbourhood']===$area) {
-                        $i=1;
-                        break;
+                    if ($item['state'] === $state && ($item['city'] === $city || $item['city'] === 'شهر '.$city)) {
+                        if (isset($item['neighbourhood']) && $item['neighbourhood']===$area){
+                            $i=1;
+                            break;
+                        }else{
+                            $i=0;
+                        }
                     }else{
                         $i=0;
                     }

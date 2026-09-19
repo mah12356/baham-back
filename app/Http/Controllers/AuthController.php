@@ -54,6 +54,10 @@ class AuthController extends Controller
             'phone.unique'=>'این شماره موبایل قبلا ثبت شده'
         ]
         );
+        $i=Helper::verifyLoc($request->area,$request->city,$request->state);
+        if($i!==1){
+            return response()->json(['message'=>'یا خطای اتصال یا این شهر محله ای با این اسم ندارد'],403);
+        }
         $phone=Helper::phone($request->phone,$request->national_code);
         if ($phone!==true){
             return response()->json(['message'=>'این شماره موبایل و کد ملی باهم همخوانی ندارند'],403);
@@ -69,14 +73,9 @@ class AuthController extends Controller
             if ($city===null){
                 return response()->json(['message'=>'شهر پیدا نشد'],403);
             }
-            $i=Helper::verifyLoc($request->area,$request->city,$request->state);
-            if($i===1){
-                (new CreateHost($request))->handle();
-                $token=auth('host')->login(Session::get('host'));
-                return $this->respondWithToken($token,'host');
-            }else{
-                return response()->json(['message'=>'این شهر محله ای با این اسم ندارد'],403);
-            }
+            (new CreateHost($request))->handle();
+            $token=auth('host')->login(Session::get('host'));
+            return $this->respondWithToken($token,'host');
         }
     }
     function loginHost(Request $request){

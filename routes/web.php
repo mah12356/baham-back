@@ -8,6 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 
-Route::get('/', function () {
-//hyghjhv
+Route::post('/', function (Request $request) {
+
 });
